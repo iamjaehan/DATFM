@@ -8,9 +8,6 @@ using Random
 using StatsBase
 
 function GenSeqSeed(n)
-    if n>=10
-        println("[Warning] n too big. n! is a dangerous thing.")
-    end
     return collect(permutations(collect(1:n)))
 end
 
@@ -224,4 +221,8 @@ end
 
 function IsEpsilonTermination(maxPriceDiff, ϵ)
     return maxPriceDiff < ϵ
+end
+
+function GenerateRandomChoices(n,m)
+    return rand(n,m)*1000
 end

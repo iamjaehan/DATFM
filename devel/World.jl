@@ -65,7 +65,8 @@ end
 function ChoosePreference(c::Auction, nashSet, gameInfo, privateInfo, disc, interrupt, decrement)
     n = gameInfo.n
     NashNum = length(nashSet)
-    out = RunDiscAuction(gameInfo, nashSet, privateInfo, disc, interrupt, decrement)
+    costList = GetCostList(gameInfo, nashSet)
+    out = RunDiscAuction(gameInfo, NashNum, costList, privateInfo, disc, interrupt, decrement)
     bestIdx = out.bestIdx
     count = out.count
     priceVec = out.priceVec
@@ -186,18 +187,6 @@ function RunSim(n, termStep, seed, prefSelectionStrategy::PrefSelectionStrategy;
         end
         cumDist = cumDist + overallDistList
     end
-    # println(systemOptIdx)
-    # println("============")
-    
-    # println(count)
-    # if matWrite
-    #     matwrite("Analysis/eHistory.mat",Dict(
-    #         "eHistory" => eHistory,
-    #         "choiceHist" => choiceHist[1:count-1],
-    #         "potentialHist" => potentialHist[1:count-1],
-    #         "psi" => ψ
-    #     ); version="v7.4")
-    # end
 
     if prefSelectionStrategy != RandomDemo()
         currentScore = EvalSystemScore(gameInfo, NashSet, choiceList[1])

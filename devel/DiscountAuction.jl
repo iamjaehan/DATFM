@@ -1,7 +1,7 @@
 using datfm
 global increment = 1
 global topN = 1
-termLimit = 10000
+termLimit = 1e10
 global ϵ = 10
 
 abstract type NextBidderProtocol end
@@ -63,7 +63,7 @@ function UpdatePayUnitList(payUnitList, plIdx, bidIdx, privatePref)
     return payUnitList
 end
 
-function RunDiscAuction(gameInfo, NashList, privateInfo, disc, interrupt, decrement)
+function RunDiscAuction(gameInfo, nNash, costList, privateInfo, disc, interrupt, decrement)
     ## Debugging history
     # global offerHist = Vector{Any}(undef,termLimit)
     # global payHist = Vector{Any}(undef,termLimit)
@@ -77,9 +77,7 @@ function RunDiscAuction(gameInfo, NashList, privateInfo, disc, interrupt, decrem
     n = gameInfo.n
     privatePref = privateInfo.privatePref
     privateUnitLimit = privateInfo.privateUnitLimit
-    nNash = length(NashList)
     assignList = zeros(n)
-    costList = GetCostList(gameInfo, NashList)
     offerList = zeros(n,nNash) # Choice [i] discounted by ~
     offerUnitList = zeros(n,nNash)
     payList = zeros(n,nNash) # Paid by whom[i] for the choice [j]
@@ -100,8 +98,8 @@ function RunDiscAuction(gameInfo, NashList, privateInfo, disc, interrupt, decrem
     # global potentialHist[1] = deepcopy(sum(costList))
 
     #이건 저장?
-    global cycleSizeTrack = Vector{Any}(undef,termLimit)
-    global activeTrack = Vector{Any}(undef,termLimit)
+    # global cycleSizeTrack = Vector{Any}(undef,termLimit)
+    # global activeTrack = Vector{Any}(undef,termLimit)
     
     count = 1
     cycleCount = 0
@@ -134,8 +132,8 @@ function RunDiscAuction(gameInfo, NashList, privateInfo, disc, interrupt, decrem
             tupleList = Vector{Any}(undef,0)            
             global activeChoice = GetActiveChoices(cycleTuple)
             global maxPriceDiff = GetPriceDiff(activeChoice, cycleTuple, n)            
-            global cycleSizeTrack[cycleCount] = maxPriceDiff
-            global activeTrack[cycleCount] = length(activeChoice)
+            # global cycleSizeTrack[cycleCount] = maxPriceDiff
+            # global activeTrack[cycleCount] = length(activeChoice)
             # Check termination condition
             if IsEpsilonTermination(maxPriceDiff,ϵ)
                 # println("Epsilon Termination Satisfied @ maxDiff: $(maxPriceDiff) < ϵ: $(ϵ)")
@@ -194,8 +192,8 @@ function RunDiscAuction(gameInfo, NashList, privateInfo, disc, interrupt, decrem
     # count = count - 1
 
     # payHist = payHist[1:count]
-    global cycleSizeTrack = cycleSizeTrack[1:cycleCount]
-    global activeTrack = activeTrack[1:cycleCount]
+    # global cycleSizeTrack = cycleSizeTrack[1:cycleCount]
+    # global activeTrack = activeTrack[1:cycleCount]
 
     # global offerHist = offerHist[1:count]
     # global payHist = payHist[1:count]
@@ -209,6 +207,9 @@ function RunDiscAuction(gameInfo, NashList, privateInfo, disc, interrupt, decrem
     # "cycleSizeTrack" => cycleSizeTrack,
     # "activeTrack" => activeTrack
     # ); version="v7.4")
+
+    cycleSizeTrack = []
+    activeTrack = []
 
     if isInterrupted
         bestIdx = Int64(mode(assignList))

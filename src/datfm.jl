@@ -16,6 +16,7 @@ export ParametricGame
 include("../devel/SearchNash.jl")
 export SearchNash, SearchAllNash
 include("../devel/0_GameSetup.jl")
+export GenerateRandomChoices, GetCostList, SetGame
 include("../devel/DiscountAuction.jl")
 export RunDiscAuction
 include("../devel/Vote.jl")

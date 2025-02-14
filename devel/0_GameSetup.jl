@@ -207,7 +207,7 @@ end
 function GetPriceDiff(activeList, cycleTuple, n)
     l = size(cycleTuple)[1]
     out = 0
-    for i = 1:l
+    for i = l
         for j = 1:n
             priceList = cycleTuple[i][2][j,activeList]
             priceDiff = maximum(priceList) - minimum(priceList)

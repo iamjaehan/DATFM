@@ -8,6 +8,7 @@ using Statistics: mean
 using Clustering: dbscan
 using StatsBase
 using ProgressBars
+using TickTock
 
 include("parametric_game.jl")
 export ParametricOptimizationProblem, solve, total_dim

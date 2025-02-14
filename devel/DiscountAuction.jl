@@ -2,7 +2,6 @@ using datfm
 global increment = 1
 global topN = 1
 termLimit = 1e10
-global ϵ = 10
 
 abstract type NextBidderProtocol end
 struct OrderTypeNextBidder <: NextBidderProtocol end
@@ -73,6 +72,10 @@ function RunDiscAuction(gameInfo, nNash, costList, privateInfo, disc, interrupt,
     # global costHist = Vector{Any}(undef,1)
     # global choiceHist = Vector{Any}(undef,termLimit)
     # global potentialHist = Vector{Any}(undef,termLimit)
+    
+    global ϵ = 10
+    tick()
+    flag = false
 
     n = gameInfo.n
     privatePref = privateInfo.privatePref
@@ -97,33 +100,21 @@ function RunDiscAuction(gameInfo, nNash, costList, privateInfo, disc, interrupt,
     # global offerValHist[1] = deepcopy(offerHist)
     # global potentialHist[1] = deepcopy(sum(costList))
 
-    #이건 저장?
-    # global cycleSizeTrack = Vector{Any}(undef,termLimit)
-    # global activeTrack = Vector{Any}(undef,termLimit)
+    # Track cycle
+    cycleSizeTrack = Vector{Any}(undef,0)
+    activeTrack = Vector{Any}(undef,0)
     
     count = 1
     cycleCount = 0
     while true
         count = count + 1
-        # global discount = discount * increment^(count%n+1-2)
-        # global discount = discount * (rand()*discVar+1-discVar/2)
         global discount = discount * increment
-        # prevAssignList = deepcopy(assignList)
-        # println("Iteration #$(count)")
 
         # Choose bidder
         bidder = WhoIsNext(nextBidderProtocol, n, count)    
         # Detect Cycle
         bidderProfitTuple = (bidder,round.(priceList,digits=10))
-        # if count == 99 || count == 115 || count == 131 || count == 147
-        #     testTuple = (bidder,round.(priceList,digits=3))
-        #     println(testTuple)
-        #     if count != 99
-        #         println(prevTuple == testTuple)
-        #     end
-        #     global prevTuple = testTuple
-        # end
-        
+
         if IsCycleDetected(tupleList, bidderProfitTuple)
             # println("Cycle Detected! @ count: $(count)")
             cycleCount = cycleCount + 1
@@ -132,8 +123,8 @@ function RunDiscAuction(gameInfo, nNash, costList, privateInfo, disc, interrupt,
             tupleList = Vector{Any}(undef,0)            
             global activeChoice = GetActiveChoices(cycleTuple)
             global maxPriceDiff = GetPriceDiff(activeChoice, cycleTuple, n)            
-            # global cycleSizeTrack[cycleCount] = maxPriceDiff
-            # global activeTrack[cycleCount] = length(activeChoice)
+            push!(cycleSizeTrack, maxPriceDiff)
+            push!(activeTrack, length(activeChoice))
             # Check termination condition
             if IsEpsilonTermination(maxPriceDiff,ϵ)
                 # println("Epsilon Termination Satisfied @ maxDiff: $(maxPriceDiff) < ϵ: $(ϵ)")
@@ -167,6 +158,12 @@ function RunDiscAuction(gameInfo, nNash, costList, privateInfo, disc, interrupt,
             if count == termLimit
                 println("[Warning] Convergence Failure [Auction] seed: $(seed),: disc: $(discount)")
             end
+            break
+        end
+
+        if peektimer() > 60
+            println("[Warning] Convergence Failure [Auction] - cpu time limit exceeded.")
+            flag = true
             break
         end
 
@@ -208,8 +205,8 @@ function RunDiscAuction(gameInfo, nNash, costList, privateInfo, disc, interrupt,
     # "activeTrack" => activeTrack
     # ); version="v7.4")
 
-    cycleSizeTrack = []
-    activeTrack = []
+    # cycleSizeTrack = []
+    # activeTrack = []
 
     if isInterrupted
         bestIdx = Int64(mode(assignList))
@@ -218,5 +215,5 @@ function RunDiscAuction(gameInfo, nNash, costList, privateInfo, disc, interrupt,
     end
     priceVec = priceList[:,bestIdx]
     costVec = costList[:,bestIdx]
-    return (; bestIdx, count, priceVec, costVec, cycleSizeTrack, activeTrack)
+    return (; bestIdx, count, priceVec, costVec, cycleSizeTrack, activeTrack, flag)
 end

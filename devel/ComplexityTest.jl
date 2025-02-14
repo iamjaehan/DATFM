@@ -11,8 +11,8 @@ using StatsBase
 # n = Int.(floor.(LinRange(10,50,8)))
 # m = Int.(floor.(LinRange(5,50,8)))
 
-n = 3:3:15
-m = 3:3:50
+n = 3:2:15
+m = 100:100:3000
 
 record = Array{Float64}(undef, (size(n)[1], size(m)[1]))
 
@@ -29,6 +29,9 @@ for i in 1:length(n)
         C = GenerateRandomChoices(n[i],m[j])
         out = @timed RunDiscAuction(gameInfo, m[j], C, GetPrivatePref(), 10, Inf, 0.9)
         record[i,j] = out.time
+        if out.value.flag
+            record[i,j] = Inf
+        end
         println("Test number $(count)/$(length(n)*length(m)) done. n = $(n[i]), m=$(m[j])")
     end
 end
